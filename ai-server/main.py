@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 
 import scheduler
-from routers import triggers, process, converse, web
+from routers import triggers, process, converse
 
 
 @asynccontextmanager
@@ -18,7 +18,7 @@ app = FastAPI(title="Voice Assistant AI Server", version="0.1.0", lifespan=lifes
 app.include_router(triggers.router, prefix="/trigger", tags=["triggers"])
 app.include_router(process.router, prefix="/api", tags=["process"])
 app.include_router(converse.router, prefix="/api/converse", tags=["converse"])
-app.include_router(web.router, tags=["web"])
+# app.include_router(web.router, tags=["web"])  # re-enable when UI is ready
 
 
 @app.get("/health")
