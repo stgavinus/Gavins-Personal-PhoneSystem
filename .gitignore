@@ -1,0 +1,10 @@
+.env
+models/
+__pycache__/
+*.pyc
+*.pyo
+*.wav
+*.mp3
+*.slin
+/tmp/
+.DS_Store
