@@ -5,9 +5,13 @@ User dials extension 200, AI picks up and has a free-form conversation.
 """
 import sys
 import os
+import signal
 import tempfile
 import subprocess
 import requests
+
+# Don't die on SIGHUP — let the script handle hangup gracefully
+signal.signal(signal.SIGHUP, signal.SIG_IGN)
 
 AI_SERVER = "http://ai-server:8000"
 
@@ -43,12 +47,20 @@ def play_wav(wav_path: str):
 
 
 def record_speech(max_silence: int = 2, timeout: int = 30) -> str | None:
+    """Returns wav path, or None for silence/timeout, or 'HANGUP' if channel died."""
     with tempfile.NamedTemporaryFile(suffix="", delete=False,
                                      dir="/tmp", prefix="conv_rec_") as f:
         base = f.name
-    res = agi_send(
-        f"RECORD FILE {base} wav \"#\" {timeout * 1000} s={max_silence}"
-    )
+    try:
+        res = agi_send(
+            f"RECORD FILE {base} wav \"#\" {timeout * 1000} s={max_silence}"
+        )
+    except (IOError, BrokenPipeError):
+        return "HANGUP"
+
+    if "hangup" in res.lower() or "result=-1" in res:
+        return "HANGUP"
+
     wav = base + ".wav"
     exists = os.path.exists(wav)
     size = os.path.getsize(wav) if exists else -1
@@ -83,8 +95,13 @@ def main():
 
     # Conversation loop
     while True:
-        wav_path = record_speech(max_silence=2, timeout=30)
+        try:
+            wav_path = record_speech(max_silence=2, timeout=30)
+        except (IOError, BrokenPipeError):
+            break
 
+        if wav_path == "HANGUP":
+            break
         if not wav_path:
             continue
 
