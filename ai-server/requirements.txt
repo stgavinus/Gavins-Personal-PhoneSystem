@@ -7,3 +7,6 @@ pydantic-settings==2.4.0
 faster-whisper==1.0.3
 deepgram-sdk==3.7.7
 pydub==0.25.1
+jinja2==3.1.4
+apscheduler==3.10.4
+pytz==2024.1

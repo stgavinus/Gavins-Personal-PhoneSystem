@@ -18,11 +18,21 @@ Guidelines:
 """
 
 
+def _active_prompt() -> str:
+    """Return stored prompt if set, otherwise the built-in default."""
+    try:
+        import data_store
+        stored = data_store.load().get("prompts", {}).get("wakeup", "")
+        return stored if stored.strip() else SYSTEM_PROMPT
+    except Exception:
+        return SYSTEM_PROMPT
+
+
 class WakeupAgent:
     def __init__(self, llm_adapter):
         self.llm = llm_adapter
         self.history: list[dict] = [
-            {"role": "system", "content": SYSTEM_PROMPT}
+            {"role": "system", "content": _active_prompt()}
         ]
 
     async def greet(self) -> str:

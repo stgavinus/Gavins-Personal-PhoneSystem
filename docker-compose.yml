@@ -21,6 +21,7 @@ services:
       - ./models:/app/models
       - asterisk-spool:/var/spool/asterisk   # write call files here
       - wakeup-flags:/tmp/wakeup             # check flag files here
+      - ai-data:/app/data                    # web UI config persistence
     depends_on:
       - asterisk
     restart: unless-stopped
@@ -30,3 +31,4 @@ services:
 volumes:
   asterisk-spool:
   wakeup-flags:
+  ai-data:

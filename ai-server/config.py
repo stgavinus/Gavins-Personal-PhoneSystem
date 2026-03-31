@@ -41,6 +41,10 @@ class Settings(BaseSettings):
     wakeup_retry_interval: int = 180
     wakeup_max_retries: int = 20
 
+    # Web UI
+    web_username: str = "admin"
+    web_password: str = "changeme"
+
     class Config:
         env_file = ".env"
 

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Phone System</title>
+<script src="https://unpkg.com/htmx.org@1.9.12"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f1117;
+    --surface: #1a1d27;
+    --surface2: #22263a;
+    --border: #2e3250;
+    --accent: #5c6bc0;
+    --accent-hover: #7986cb;
+    --green: #2ecc71;
+    --red: #e74c3c;
+    --yellow: #f39c12;
+    --text: #e8eaf6;
+    --muted: #7986cb;
+    --radius: 8px;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    font-size: 15px;
+    min-height: 100vh;
+  }
+
+  header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  header h1 { font-size: 18px; font-weight: 600; color: var(--text); }
+  header .sub { font-size: 12px; color: var(--muted); }
+
+  nav {
+    display: flex;
+    gap: 4px;
+    padding: 16px 24px 0;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+  }
+  nav button {
+    background: none;
+    border: none;
+    color: var(--muted);
+    padding: 8px 16px;
+    cursor: pointer;
+    font-size: 14px;
+    border-bottom: 2px solid transparent;
+    margin-bottom: -1px;
+    transition: color 0.15s;
+  }
+  nav button:hover { color: var(--text); }
+  nav button.active { color: var(--text); border-bottom-color: var(--accent); }
+
+  main { padding: 24px; max-width: 800px; }
+
+  .tab { display: none; }
+  .tab.active { display: block; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+  }
+  .card h2 { font-size: 14px; font-weight: 600; color: var(--muted); text-transform: uppercase;
+              letter-spacing: 0.05em; margin-bottom: 16px; }
+
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; }
+  .field input, .field select, .field textarea {
+    width: 100%; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: var(--radius); color: var(--text); padding: 8px 12px; font-size: 14px;
+    outline: none; transition: border-color 0.15s;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { border-color: var(--accent); }
+  .field textarea { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 13px;
+                    min-height: 140px; resize: vertical; line-height: 1.5; }
+  .field select option { background: var(--surface2); }
+
+  .row { display: flex; gap: 12px; }
+  .row .field { flex: 1; }
+
+  .btn {
+    background: var(--accent); color: var(--text); border: none; border-radius: var(--radius);
+    padding: 9px 18px; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.15s;
+  }
+  .btn:hover { background: var(--accent-hover); }
+  .btn.secondary { background: var(--surface2); border: 1px solid var(--border); }
+  .btn.secondary:hover { background: var(--border); }
+  .btn.danger { background: var(--red); }
+  .btn.danger:hover { background: #c0392b; }
+  .btn.green { background: #27ae60; }
+  .btn.green:hover { background: var(--green); }
+  .btn-row { display: flex; gap: 8px; align-items: center; }
+
+  .toggle-wrap { display: flex; align-items: center; gap: 10px; }
+  .toggle { position: relative; width: 44px; height: 24px; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle .slider {
+    position: absolute; inset: 0; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 24px; cursor: pointer; transition: background 0.2s;
+  }
+  .toggle .slider::before {
+    content: ""; position: absolute; width: 18px; height: 18px; top: 2px; left: 2px;
+    background: var(--muted); border-radius: 50%; transition: transform 0.2s, background 0.2s;
+  }
+  .toggle input:checked + .slider { background: var(--accent); border-color: var(--accent); }
+  .toggle input:checked + .slider::before { transform: translateX(20px); background: white; }
+  .toggle-label { font-size: 14px; }
+
+  .badge {
+    display: inline-block; font-size: 11px; padding: 2px 8px; border-radius: 4px;
+    font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .badge.green { background: rgba(46,204,113,0.15); color: var(--green); }
+  .badge.yellow { background: rgba(243,156,18,0.15); color: var(--yellow); }
+  .badge.red { background: rgba(231,76,60,0.15); color: var(--red); }
+
+  .status-row { display: flex; align-items: center; gap: 8px; padding: 10px 0;
+                border-bottom: 1px solid var(--border); }
+  .status-row:last-child { border-bottom: none; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .dot.muted { background: var(--border); }
+  .status-label { flex: 1; font-size: 14px; }
+  .status-value { font-size: 13px; color: var(--muted); }
+
+  .log-entry {
+    display: flex; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+  .log-entry:last-child { border-bottom: none; }
+  .log-time { color: var(--muted); font-family: monospace; flex-shrink: 0; }
+  .log-event { color: var(--text); }
+
+  .toast {
+    display: inline-block; padding: 8px 14px; border-radius: var(--radius);
+    font-size: 13px; color: white; font-weight: 500;
+    animation: fadein 0.2s ease;
+  }
+  @keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  #toast-schedule, #toast-prompts, #toast-trigger { min-height: 36px; display: flex; align-items: center; }
+
+  .note { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+  .htmx-request .btn { opacity: 0.6; pointer-events: none; }
+
+  @media (max-width: 600px) {
+    main { padding: 16px; }
+    .row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Phone System</h1>
+    <div class="sub">AI Voice Assistant &nbsp;·&nbsp; {{ settings.ami_host }}</div>
+  </div>
+</header>
+
+<nav id="nav">
+  <button class="active" onclick="switchTab('dashboard')">Dashboard</button>
+  <button onclick="switchTab('schedule')">Schedule</button>
+  <button onclick="switchTab('prompts')">Prompts</button>
+</nav>
+
+<main>
+
+<!-- ── Dashboard ──────────────────────────────────────────────────────── -->
+<div id="tab-dashboard" class="tab active">
+
+  <div class="card">
+    <h2>Status</h2>
+    <div class="status-row">
+      <div class="dot green"></div>
+      <div class="status-label">AI Server</div>
+      <div class="status-value">running</div>
+    </div>
+    <div class="status-row">
+      <div class="dot green"></div>
+      <div class="status-label">LLM</div>
+      <div class="status-value">{{ settings.llm_provider }} / {{ settings.ollama_model if settings.llm_provider == 'ollama' else settings.gemini_model if settings.llm_provider == 'gemini' else settings.groq_model }}</div>
+    </div>
+    <div class="status-row">
+      <div class="dot green"></div>
+      <div class="status-label">STT</div>
+      <div class="status-value">{{ settings.stt_provider }}{% if settings.stt_provider == 'whisper' %} ({{ settings.whisper_model }}){% endif %}</div>
+    </div>
+    <div class="status-row">
+      <div class="dot {% if schedule.enabled %}green{% else %}muted{% endif %}"></div>
+      <div class="status-label">Wake-up Schedule</div>
+      <div class="status-value">
+        {% if schedule.enabled %}
+          {{ "%02d:%02d"|format(schedule.hour, schedule.minute) }} {{ schedule.timezone }}
+          {% if next_run %}&nbsp;·&nbsp; next: {{ next_run }}{% endif %}
+        {% else %}
+          disabled
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Manual Trigger</h2>
+    <p style="font-size:14px; color:var(--muted); margin-bottom:14px;">
+      Immediately start a wake-up call sequence to extension {{ settings.wakeup_extension }}.
+    </p>
+    <div class="btn-row">
+      <button class="btn green"
+        hx-post="/web/trigger"
+        hx-target="#toast-trigger"
+        hx-swap="innerHTML">
+        Trigger Wake-up Now
+      </button>
+      <div id="toast-trigger"></div>
+    </div>
+  </div>
+
+  {% if call_log %}
+  <div class="card">
+    <h2>Recent Activity</h2>
+    {% for entry in call_log %}
+    <div class="log-entry">
+      <div class="log-time">{{ entry.time[11:19] }}</div>
+      <div class="log-event">{{ entry.event }}{% if entry.detail %} &mdash; {{ entry.detail }}{% endif %}</div>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+</div>
+
+<!-- ── Schedule ──────────────────────────────────────────────────────── -->
+<div id="tab-schedule" class="tab">
+  <div class="card">
+    <h2>Wake-up Schedule</h2>
+    <form hx-post="/web/schedule" hx-target="#toast-schedule" hx-swap="innerHTML">
+
+      <div class="field" style="margin-bottom:20px;">
+        <div class="toggle-wrap">
+          <label class="toggle">
+            <input type="checkbox" name="enabled" value="true"
+              {% if schedule.enabled %}checked{% endif %}
+              onchange="document.getElementById('schedule-fields').style.opacity = this.checked ? '1' : '0.4'">
+            <span class="slider"></span>
+          </label>
+          <span class="toggle-label">Enable daily wake-up call</span>
+        </div>
+      </div>
+
+      <div id="schedule-fields" style="opacity: {{ '1' if schedule.enabled else '0.4' }}; transition: opacity 0.2s;">
+        <div class="row">
+          <div class="field">
+            <label>Hour (0–23)</label>
+            <input type="number" name="hour" min="0" max="23" value="{{ schedule.hour }}">
+          </div>
+          <div class="field">
+            <label>Minute (0–59)</label>
+            <input type="number" name="minute" min="0" max="59" value="{{ schedule.minute }}">
+          </div>
+        </div>
+
+        <div class="field">
+          <label>Timezone</label>
+          <select name="timezone">
+            {% for tz in timezones %}
+            <option value="{{ tz }}" {% if schedule.timezone == tz %}selected{% endif %}>{{ tz }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button type="submit" class="btn">Save Schedule</button>
+        <div id="toast-schedule"></div>
+      </div>
+    </form>
+  </div>
+
+  <div class="card">
+    <h2>Note</h2>
+    <p class="note" style="font-size:13px; color:var(--muted); line-height:1.6;">
+      The schedule runs inside the AI server container — no cron job needed on your Mac.
+      If you had a cron job set up previously (<code>curl .../trigger/wakeup</code>), you can remove it.
+      Extension called: <strong>{{ settings.wakeup_extension }}</strong>.
+    </p>
+  </div>
+</div>
+
+<!-- ── Prompts ────────────────────────────────────────────────────────── -->
+<div id="tab-prompts" class="tab">
+  <div class="card">
+    <h2>Prompts</h2>
+    <p style="font-size:13px; color:var(--muted); margin-bottom:20px; line-height:1.5;">
+      Changes take effect on the <em>next</em> call. Leave a prompt blank to use the built-in default.
+    </p>
+
+    <form hx-post="/web/prompts" hx-target="#toast-prompts" hx-swap="innerHTML">
+
+      <div class="field">
+        <label>Conversation Agent (ext 200)</label>
+        <textarea name="conversation" placeholder="{{ conv_default }}">{{ prompts.conversation }}</textarea>
+        <div class="note">Placeholder text shows the current default.</div>
+      </div>
+
+      <div class="field">
+        <label>Wake-up Agent</label>
+        <textarea name="wakeup" placeholder="{{ wakeup_default }}">{{ prompts.wakeup }}</textarea>
+      </div>
+
+      <div class="btn-row">
+        <button type="submit" class="btn">Save Prompts</button>
+        <button type="button" class="btn secondary"
+          hx-post="/web/prompts/reset"
+          hx-vals='{"which": "conversation"}'
+          hx-target="#toast-prompts"
+          hx-swap="innerHTML"
+          onclick="document.querySelector('[name=conversation]').value=''">
+          Reset Conversation
+        </button>
+        <button type="button" class="btn secondary"
+          hx-post="/web/prompts/reset"
+          hx-vals='{"which": "wakeup"}'
+          hx-target="#toast-prompts"
+          hx-swap="innerHTML"
+          onclick="document.querySelector('[name=wakeup]').value=''">
+          Reset Wake-up
+        </button>
+        <div id="toast-prompts"></div>
+      </div>
+    </form>
+  </div>
+</div>
+
+</main>
+
+<script>
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// Auto-clear toasts after 4s
+document.body.addEventListener('htmx:afterSwap', function(e) {
+  const target = e.detail.target;
+  if (target && target.querySelector('.toast')) {
+    setTimeout(() => { target.innerHTML = ''; }, 4000);
+  }
+});
+</script>
+</body>
+</html>
