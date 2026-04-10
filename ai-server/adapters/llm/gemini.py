@@ -66,7 +66,12 @@ class GeminiAdapter(LLMAdapter):
                 params={"key": self.api_key},
                 json=payload,
             )
-            r.raise_for_status()
+            if not r.is_success:
+                raise httpx.HTTPStatusError(
+                    f"{r.status_code} {r.text[:500]}",
+                    request=r.request,
+                    response=r,
+                )
             data = r.json()
 
         candidate = data["candidates"][0]["content"]
