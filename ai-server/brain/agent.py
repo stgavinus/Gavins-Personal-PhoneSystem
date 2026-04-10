@@ -53,9 +53,6 @@ class BrainAgent:
             "Use search_notes when they ask about something they previously asked you to record."
         )
 
-        lines.append(
-            "\nIf the user's message is [call_connected], greet them warmly and ask how you can help."
-        )
 
         return "\n".join(lines)
 
@@ -70,6 +67,10 @@ class BrainAgent:
         Process one turn. Returns (response_text, action).
         action is always "continue" for now; "end_call" reserved for future use.
         """
+        # Special case: phone call connected — generate a greeting
+        if text == "[call_connected]":
+            text = "Please greet me warmly and ask how you can help. Keep it to one sentence."
+
         # 1. Search long-term memory for context
         memories = await asyncio.get_event_loop().run_in_executor(
             None, mem0_client.search_memory, text, user_id
@@ -86,8 +87,9 @@ class BrainAgent:
         turn_messages.extend(history)
         turn_messages.append({"role": "user", "content": text})
 
-        # 4. Persist user message
-        memory.add_message(session_id, "user", text)
+        # 4. Persist user message (skip synthetic greet prompt)
+        if not text.startswith("Please greet me warmly"):
+            memory.add_message(session_id, "user", text)
 
         # 5. Tool-calling loop (max 5 iterations)
         response_text = ""
