@@ -1,5 +1,9 @@
 FROM python:3.11-slim
 
+# Prevent Python from writing .pyc files (saves thousands of inodes)
+ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1
+
 WORKDIR /app
 
 # System deps: ffmpeg for audio conversion, wget for piper download
@@ -29,9 +33,9 @@ RUN mkdir -p /app/models && \
         "https://huggingface.co/rhasspy/piper-voices/resolve/main/en/en_US/lessac/medium/en_US-lessac-medium.onnx.json"
 
 COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt && \
+    find /usr/local/lib -type d -name '__pycache__' -exec rm -rf {} + 2>/dev/null || true
 
 COPY . .
 
-ENV PYTHONUNBUFFERED=1
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
