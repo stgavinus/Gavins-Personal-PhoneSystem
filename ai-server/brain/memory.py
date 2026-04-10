@@ -15,6 +15,8 @@ def _conn():
 
 
 def init_db():
+    import os
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
     with _conn() as con:
         con.executescript("""
             CREATE TABLE IF NOT EXISTS messages (
