@@ -21,7 +21,22 @@ class GeminiAdapter(LLMAdapter):
             elif role == "user":
                 contents.append({"role": "user", "parts": [{"text": content}]})
             elif role == "assistant":
-                contents.append({"role": "model", "parts": [{"text": content}]})
+                tc = msg.get("tool_call")
+                if tc:
+                    contents.append({
+                        "role": "model",
+                        "parts": [{"functionCall": {"name": tc["name"], "args": tc.get("args", {})}}],
+                    })
+                else:
+                    contents.append({"role": "model", "parts": [{"text": content}]})
+            elif role == "tool":
+                contents.append({
+                    "role": "user",
+                    "parts": [{"functionResponse": {
+                        "name": msg.get("name", ""),
+                        "response": {"result": content},
+                    }}],
+                })
         return system, contents
 
     def _convert_tools(self, tools: list[dict]) -> list[dict]:

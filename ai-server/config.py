@@ -41,6 +41,9 @@ class Settings(BaseSettings):
     wakeup_retry_interval: int = 180
     wakeup_max_retries: int = 20
 
+    # Brain
+    brain_gemini_model: str = "gemini-3.1-flash-lite-preview"
+
     # Web UI
     web_username: str = "admin"
     web_password: str = "changeme"
