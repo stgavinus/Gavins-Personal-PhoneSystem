@@ -23,10 +23,10 @@ class GeminiAdapter(LLMAdapter):
             elif role == "assistant":
                 tc = msg.get("tool_call")
                 if tc:
-                    contents.append({
-                        "role": "model",
-                        "parts": [{"functionCall": {"name": tc["name"], "args": tc.get("args", {})}}],
-                    })
+                    fc_part: dict = {"functionCall": {"name": tc["name"], "args": tc.get("args", {})}}
+                    if tc.get("_thought_signature"):
+                        fc_part["thoughtSignature"] = tc["_thought_signature"]
+                    contents.append({"role": "model", "parts": [fc_part]})
                 else:
                     contents.append({"role": "model", "parts": [{"text": content}]})
             elif role == "tool":
@@ -87,5 +87,9 @@ class GeminiAdapter(LLMAdapter):
                     "name": fc["name"],
                     "args": fc.get("args", {}),
                 }
+                # Thinking models include a thoughtSignature that must be
+                # preserved and echoed back in multi-turn function call history.
+                if "thoughtSignature" in part:
+                    tool_call["_thought_signature"] = part["thoughtSignature"]
 
         return {"content": text.strip(), "tool_call": tool_call}
