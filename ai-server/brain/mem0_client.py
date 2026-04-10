@@ -22,7 +22,7 @@ def init_mem0(api_key: str, model: str = "gemini-3.1-flash-lite-preview"):
             "embedder": {
                 "provider": "gemini",
                 "config": {
-                    "model": "models/text-embedding-004",
+                    "model": "models/gemini-embedding-001",
                     "api_key": api_key,
                     "embedding_dims": 768,
                 },
