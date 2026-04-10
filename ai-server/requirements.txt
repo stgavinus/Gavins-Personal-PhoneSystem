@@ -12,3 +12,4 @@ apscheduler==3.10.4
 pytz==2024.1
 mem0ai
 chromadb
+google-generativeai
