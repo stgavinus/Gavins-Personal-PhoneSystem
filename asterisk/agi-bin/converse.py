@@ -34,7 +34,8 @@ def agi_read_vars() -> dict:
     return env
 
 
-def play_wav(wav_path: str):
+def play_wav(wav_path: str) -> bool:
+    """Play audio. Returns False if the channel hung up during playback."""
     slin_path = wav_path + ".sln"
     subprocess.run(
         ["ffmpeg", "-y", "-i", wav_path,
@@ -42,8 +43,16 @@ def play_wav(wav_path: str):
         check=True, capture_output=True
     )
     base = slin_path[:-4]
-    agi_send(f"STREAM FILE {base} \"\"")
-    os.unlink(slin_path)
+    try:
+        result = agi_send(f"STREAM FILE {base} \"\"")
+    except (IOError, BrokenPipeError):
+        return False
+    finally:
+        try:
+            os.unlink(slin_path)
+        except OSError:
+            pass
+    return "result=-1" not in result
 
 
 def record_speech(max_silence: int = 2, timeout: int = 30) -> str | None:
@@ -80,14 +89,16 @@ def main():
         r = requests.post(
             f"{AI_SERVER}/api/converse/greet",
             data={"call_id": call_id},
-            timeout=30,
+            timeout=60,
         )
         r.raise_for_status()
         with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
             f.write(r.content)
             greeting_wav = f.name
-        play_wav(greeting_wav)
+        still_up = play_wav(greeting_wav)
         os.unlink(greeting_wav)
+        if not still_up:
+            return
     except Exception as e:
         agi_send(f"VERBOSE \"Greet error: {e}\" 1")
         agi_send("HANGUP")
@@ -120,8 +131,10 @@ def main():
                 f.write(r.content)
                 resp_wav = f.name
 
-            play_wav(resp_wav)
+            still_up = play_wav(resp_wav)
             os.unlink(resp_wav)
+            if not still_up:
+                break
 
         except Exception as e:
             agi_send(f"VERBOSE \"Process error: {e}\" 1")

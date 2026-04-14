@@ -10,7 +10,7 @@ log = logging.getLogger(__name__)
 _mem0 = None
 
 
-def init_mem0(api_key: str, model: str = "gemini-3.1-flash-lite-preview"):
+def init_mem0(api_key: str, model: str = "gemini-2.0-flash-lite"):
     global _mem0
     try:
         from mem0 import Memory  # type: ignore

@@ -9,14 +9,13 @@ from fastapi import APIRouter, File, Form, UploadFile, HTTPException
 from fastapi.responses import FileResponse
 
 from adapters.stt import get_stt_adapter
-from adapters.tts.piper import PiperAdapter
+from adapters.tts import get_tts_adapter
 from brain.agent import get_brain
-from config import settings
 
 router = APIRouter()
 
 _stt = get_stt_adapter()
-_tts = PiperAdapter(voice=settings.piper_voice)
+_tts = get_tts_adapter()
 
 
 @router.post("/greet")

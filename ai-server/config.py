@@ -28,8 +28,9 @@ class Settings(BaseSettings):
     deepgram_api_key: str = ""
 
     # TTS
-    tts_provider: str = "piper"
+    tts_provider: str = "deepgram"
     piper_voice: str = "en_US-lessac-medium"
+    tts_deepgram_voice: str = "aura-asteria-en"
 
     # Asterisk AMI
     ami_host: str = "asterisk"
