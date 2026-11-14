@@ -3,9 +3,9 @@ from pydantic_settings import BaseSettings
 
 class Settings(BaseSettings):
     # VM / Asterisk
-    vm_tailscale_ip: str = "REDACTED_IP"
-    vm_ssh_user: str = "sangoma"
-    vm_ssh_key: str = "~/.ssh/REDACTED_KEY"
+    vm_tailscale_ip: str = ""
+    vm_ssh_user: str = ""
+    vm_ssh_key: str = ""
     wakeup_extension: str = "101"
 
     # AI server
@@ -36,7 +36,7 @@ class Settings(BaseSettings):
     ami_host: str = "asterisk"
     ami_port: int = 5038
     ami_user: str = "aiserver"
-    ami_secret: str = "CHANGE_ME"
+    ami_secret: str = ""
 
     # Wake-up
     wakeup_retry_interval: int = 180

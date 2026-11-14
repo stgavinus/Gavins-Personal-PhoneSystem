@@ -9,3 +9,5 @@ __pycache__/
 /tmp/
 .DS_Store
 mcp_venv/
+asterisk/etc/pjsip.conf
+asterisk/etc/manager.conf

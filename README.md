@@ -85,6 +85,10 @@ Secrets live in a `.env` file (gitignored):
 | `BRAIN_URL` | bridge | ai-server address (default `http://localhost:8000`) |
 | `VOICE_BRIDGE_URL`, `VOICE_BRIDGE_API_KEY`, `VOICE_EXTENSION` | `voice_mcp.py` | MCP client settings |
 
+## Asterisk config
+
+`asterisk/etc/pjsip.conf` and `manager.conf` hold SIP passwords and the server IP, so they are gitignored. Copy `pjsip.conf.example` and `manager.conf.example` to those names and fill in real values; `deploy.sh` syncs them to the VPS.
+
 ## Deploy
 
 `deploy/setup_vps.sh` provisions the VPS. `deploy/deploy.sh [bridge|ai-server|asterisk|all]` rsyncs the code and restarts the systemd services (`bridge.service`, `ai-server.service`).
