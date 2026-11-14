@@ -4,7 +4,7 @@ One singleton shared across all channels (phone, Telegram, etc.).
 """
 import asyncio
 import logging
-from adapters.llm.gemini import GeminiAdapter
+from adapters.llm import get_llm_adapter
 from brain import mem0_client, memory
 from brain.tools.registry import BRAIN_TOOL_SCHEMAS, execute_tool
 from config import settings
@@ -23,10 +23,7 @@ def get_brain() -> "BrainAgent":
 
 class BrainAgent:
     def __init__(self):
-        self._llm = GeminiAdapter(
-            api_key=settings.gemini_api_key,
-            model=settings.brain_gemini_model,
-        )
+        self._llm = get_llm_adapter()
 
     def _build_system(self, memories: list[str], channel: str) -> str:
         lines = [

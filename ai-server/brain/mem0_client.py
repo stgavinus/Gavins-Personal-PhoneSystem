@@ -4,8 +4,11 @@ Initialised once at startup, shared across all requests.
 """
 import asyncio
 import logging
+import os
 
 log = logging.getLogger(__name__)
+
+_DATA_DIR = os.environ.get("DATA_DIR", "/home/ubuntu/VoiceProject/data")
 
 _mem0 = None
 
@@ -31,7 +34,7 @@ def init_mem0(api_key: str, model: str = "gemini-2.0-flash-lite"):
                 "provider": "chroma",
                 "config": {
                     "collection_name": "assistant",
-                    "path": "/app/data/chroma",
+                    "path": os.path.join(_DATA_DIR, "chroma"),
                 },
             },
         }

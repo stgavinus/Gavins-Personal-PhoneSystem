@@ -1,0 +1,19 @@
+[Unit]
+Description=VoiceProject AudioSocket Bridge
+After=network.target asterisk.service
+Requires=asterisk.service
+
+[Service]
+Type=simple
+User=ubuntu
+WorkingDirectory=/home/ubuntu/VoiceProject
+EnvironmentFile=/home/ubuntu/VoiceProject/.env
+ExecStart=/home/ubuntu/VoiceProject/venv/bin/python -m bridge
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=bridge
+
+[Install]
+WantedBy=multi-user.target

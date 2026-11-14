@@ -2,10 +2,12 @@
 SQLite persistence for the brain: session history, notes, reminders.
 Long-term personal facts are handled by Mem0, not here.
 """
+import os
 import sqlite3
 from datetime import datetime, timezone
 
-DB_PATH = "/app/data/assistant.db"
+_DATA_DIR = os.environ.get("DATA_DIR", "/home/ubuntu/VoiceProject/data")
+DB_PATH   = os.path.join(_DATA_DIR, "assistant.db")
 
 
 def _conn():

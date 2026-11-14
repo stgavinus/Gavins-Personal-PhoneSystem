@@ -8,3 +8,4 @@ __pycache__/
 *.slin
 /tmp/
 .DS_Store
+mcp_venv/
